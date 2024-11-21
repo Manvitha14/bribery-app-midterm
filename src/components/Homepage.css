@@ -1,0 +1,268 @@
+/* General Homepage Styling */
+.homepage {
+  padding: 20px;
+  background-color: #eaf3ff; /* Light blue background */
+  transition: opacity 2s ease;
+}
+
+/* Full-screen overlay */
+.image-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7); /* Dark background */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999; /* Ensures the overlay stays above other content */
+  animation: zoomOut 2s ease forwards; /* Zoom-out animation */
+}
+
+.full-screen-image {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain; /* Ensure the image scales properly */
+  animation: zoomOut 2s ease forwards; /* Apply zoom-out effect */
+}
+
+@keyframes zoomOut {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.2);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(0);
+    opacity: 0;
+  }
+}
+
+/* Hide homepage during overlay */
+.homepage.hidden {
+  opacity: 0;
+}
+
+/* Ensure homepage is visible after overlay disappears */
+.homepage.visible {
+  opacity: 1;
+  transition: opacity 1s ease-in-out;
+}
+
+/* Header and Footer Visibility Control During Overlay */
+/* Hide header and footer when the overlay is active */
+.image-overlay + .homepage header,
+.image-overlay + .homepage footer {
+  opacity: 0; /* Make them invisible */
+  pointer-events: none; /* Disable interactions */
+  transition: opacity 0.5s ease, pointer-events 0.5s ease; /* Smooth transition */
+}
+
+/* Ensure header and footer are visible after overlay disappears */
+.homepage.visible header,
+.homepage.visible footer {
+  opacity: 1; /* Make them visible */
+  pointer-events: auto; /* Re-enable interactions */
+  transition: opacity 0.5s ease, pointer-events 0.5s ease; /* Smooth transition */
+}
+
+/* Hero Section */
+.hero {
+  background: linear-gradient(135deg, #002f6c, #004a9f); /* Police-themed blue gradient */
+  border-radius: 15px;
+  padding: 30px;
+  text-align: center;
+  color: #ffffff;
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+  animation: fadeIn 1s ease-in-out;
+}
+
+.hero h2 {
+  font-size: 2rem;
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.hero .icon {
+  padding: 5px 10px;
+  border-radius: 5px;
+}
+
+.hero p {
+  font-size: 1.2rem;
+  margin-bottom: 25px;
+}
+
+.hero img.bribery-image-small {
+  width: 120px;
+  height: 120px;
+  margin: 20px auto;
+  display: block;
+  border-radius: 50%;
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.hero img.bribery-image-small:hover {
+  transform: scale(1.15);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+}
+
+/* About Us Section */
+.about {
+  background-color: #ffffff;
+  padding: 30px;
+  margin: 25px 0;
+  border-radius: 15px;
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+  animation: slideUp 0.8s ease-in-out;
+  color: #333;
+}
+
+/* How It Works Section */
+.how-it-works {
+  padding: 30px;
+  margin: 25px 0;
+}
+
+.how-it-works h3 {
+  font-size: 1.8rem;
+  color: #002f6c;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center;
+}
+
+.step-card {
+  background-color: #f2f5fa; /* Light blue-gray */
+  border: 2px solid #004a9f; /* Blue border */
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  text-align: center;
+  width: 200px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.step-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+}
+
+.step-card h4 {
+  font-size: 1.5rem;
+  margin-bottom: 10px;
+  color: #ff0033; /* Bold red for headings */
+}
+
+.step-card p {
+  font-size: 1rem;
+  color: #333;
+}
+
+/* Features Section */
+.features {
+  background-color: #ffe6e6; /* Soft pale red */
+  padding: 30px;
+  margin: 25px 0;
+  border-radius: 15px;
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+  animation: slideUp 1s ease-in-out;
+  color: #333;
+}
+
+.features ul li {
+  margin: 10px 0;
+  font-size: 1rem;
+  color: #002f6c; /* Blue for readability */
+}
+
+/* Statistics Section */
+.statistics {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  padding: 30px;
+  margin: 25px 0;
+  background-color: #d9e9ff; /* Soft blue tint */
+  border-radius: 15px;
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+  animation: fadeIn 1s ease-in-out;
+}
+
+.stat-item h4 {
+  font-size: 2rem;
+  color: #ff0033; /* Red for emphasis */
+}
+
+.stat-item p {
+  font-size: 1rem;
+  color: #333;
+}
+
+/* Call to Action Section */
+.cta {
+  text-align: center;
+  padding: 30px;
+  margin: 25px 0;
+  background-color: #d9e9ff; /* Light blue tint */
+  border-radius: 15px;
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+  animation: slideUp 1.2s ease-in-out;
+  color: #333;
+}
+
+.cta h3 {
+  font-size: 1.8rem;
+  margin-bottom: 20px;
+  color: #004a9f; /* Blue for police theme */
+}
+
+.cta .btn-primary {
+  background-color: #ff0033; /* Red button */
+  color: #fff;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.cta .btn-primary:hover {
+  background-color: #cc0029; /* Darker red on hover */
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}

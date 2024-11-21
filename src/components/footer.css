@@ -1,0 +1,126 @@
+/* Footer Styles */
+.footer {
+  background-color: #f8f9fa;
+  padding: 20px 40px; /* Add padding on left and right */
+  font-size: 0.9rem;
+  color: #555;
+  border-top: 2px solid #e0e0e0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* Center content vertically */
+  align-items: center; /* Center content horizontally */
+  min-height: 250px;
+  transition: opacity 2s ease; /* Smooth transition for opacity */
+}
+
+.footer-content {
+  display: flex;
+  justify-content: space-between; /* Distribute sections evenly */
+  align-items: flex-start;
+  gap: 20px; /* Add space between sections */
+  margin-bottom: 20px;
+  width: 100%; /* Full width for centering the sections */
+  max-width: 1200px; /* Prevent it from getting too wide */
+}
+
+.footer-section {
+  flex: 1;
+  text-align: center; /* Align text to center for all sections */
+}
+
+.footer-section.contact {
+  text-align: center;
+  max-width: 25%; /* Set a maximum width for Contact Us */
+}
+
+.footer-section.social-media,
+.footer-section.quick-links {
+  max-width: 30%; /* Prevent sections from spanning too wide */
+}
+
+.footer-section h4 {
+  margin-bottom: 10px;
+  color: #333;
+  font-size: 1.1rem; /* Slightly larger font size */
+}
+
+.social-links,
+.quick-links ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.social-links li,
+.quick-links ul li {
+  margin-bottom: 5px;
+}
+
+.social-links a,
+.quick-links ul li a {
+  text-decoration: none;
+  color: #0073e6;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 10px; /* Space between icon and text */
+}
+
+.social-links a:hover,
+.quick-links ul li a:hover {
+  color: #005bb5;
+}
+
+/* Style for social media icons */
+.social-links {
+  display: flex;
+  flex-direction: column; /* Stack icons vertically */
+  align-items: center; /* Center-align the icons */
+  gap: 15px; /* Space between the icons */
+}
+
+.social-icon {
+  color: #0073e6; /* Icon color */
+  transition: color 0.3s ease; /* Smooth transition for hover effect */
+  font-size: 1.5rem; /* Make icons slightly larger */
+}
+
+.social-icon:hover {
+  color: #005bb5; /* Change color on hover */
+}
+
+.social-icon span {
+  margin-left: 10px; /* Space between icon and text */
+  font-size: 1rem; /* Slightly smaller text */
+}
+
+/* Footer bottom section */
+.footer-bottom {
+  text-align: center;
+  font-size: 1rem;
+  color: #333;
+  margin-top: 20px;
+}
+
+/* Quick Links List Fix */
+.quick-links ul {
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Center align the list items */
+}
+
+.quick-links ul li {
+  margin-bottom: 10px;
+}
+
+/* Hide footer when the overlay is active */
+.image-overlay + .homepage footer {
+  opacity: 0; /* Hide the footer */
+  pointer-events: none; /* Disable interactions */
+}
+
+/* Ensure footer is visible after overlay disappears */
+.homepage.visible footer {
+  opacity: 1;
+  pointer-events: auto;
+}
