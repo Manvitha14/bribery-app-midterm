@@ -3,60 +3,126 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background-color: #f8f9fa;
+  background-color: #023970; /* Navy blue background */
   padding: 10px 20px;
   border-bottom: 2px solid #e0e0e0;
   box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
   transition: opacity 2s ease; /* Smooth transition for opacity */
 }
 
-/* Styles for the logo container */
+/* Logo container styles */
 .logo-container {
   display: flex;
   align-items: center;
-  gap: 10px; /* Spacing between image and text */
+  gap: 10px; /* Space between logo image and text */
 }
 
 .logo-image {
-  width: 50px; /* Adjust the size of the image */
+  width: 50px; /* Logo image size */
   height: auto;
 }
 
 .logo-text {
-  font-size: 1.5rem; /* Adjust text size */
+  font-size: 1.5rem; /* Text size for the logo */
   font-weight: bold;
-  color: #333; /* Adjust text color */
+  color: white;
 }
 
+/* Navigation styles */
 .nav ul {
   display: flex;
-  gap: 20px;
-  list-style: none;
+  gap: 20px; /* Space between menu items */
+  list-style: none; /* Remove bullet points */
   margin: 0;
   padding: 0;
+}
+
+.nav ul li {
+  position: relative; /* Needed for dropdown positioning */
 }
 
 .nav ul li a {
   text-decoration: none;
   font-size: 1rem;
-  color: #555;
+  color: white;
   transition: color 0.3s ease, transform 0.3s ease;
 }
 
 .nav ul li a:hover {
-  color: #007bff;
-  transform: translateY(-2px);
+  color: #007bff; /* Hover color effect */
+  transform: translateY(-2px); /* Slight upward movement on hover */
 }
 
-/* Responsive Design: Align items in smaller viewports */
+/* Profile dropdown styles */
+.profile-dropdown {
+  position: absolute;
+  top: 100%; /* Below the menu item */
+  right: 0; /* Align to the right */
+  background-color: white; /* White background for dropdown */
+  border: 1px solid #ccc; /* Border around the dropdown */
+  border-radius: 5px; /* Rounded corners */
+  box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow effect */
+  padding: 10px;
+  z-index: 1000; /* Ensure it appears above other elements */
+  min-width: 200px; /* Minimum width for dropdown */
+}
+
+.profile-dropdown p {
+  margin: 5px 0; /* Space between profile fields */
+  color: #333; /* Text color */
+}
+
+.profile-dropdown p strong {
+  color: #000; /* Highlight key labels */
+}
+
+.profile-dropdown::before {
+  content: "";
+  position: absolute;
+  top: -5px;
+  right: 15px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: transparent transparent white transparent; /* Arrow effect */
+}
+
+/* Logout button styles */
+.nav ul li:last-child a {
+  font-weight: bold; /* Emphasize the logout button */
+  color: #ff4d4d; /* Red color for logout */
+}
+
+.nav ul li:last-child a:hover {
+  color: #ff1a1a; /* Darker red on hover */
+}
+
+/* Responsive Design */
 @media (max-width: 768px) {
   .nav ul {
-    flex-direction: column;
-    align-items: center; /* Center the navigation items on small screens */
+    flex-direction: column; /* Stack menu items vertically */
+    align-items: flex-start; /* Align items to the left */
+    background-color: #023970; /* Match header background */
+    padding: 10px;
+    border-radius: 5px;
   }
 
   .nav ul li {
-    margin: 10px 0;
+    margin: 5px 0; /* Add space between items */
+  }
+}
+
+/* Responsive dropdown styles */
+@media (max-width: 768px) {
+  .profile-dropdown {
+    position: static; /* Inline dropdown for smaller screens */
+    box-shadow: none;
+    border: none;
+    margin-top: 10px;
+    background-color: #f9f9f9;
+  }
+
+  .profile-dropdown p {
+    color: #000;
   }
 }
 

@@ -1,9 +1,9 @@
 /* Footer Styles */
 .footer {
-  background-color: #f8f9fa;
+  background-color: #023970;
   padding: 20px 40px; /* Add padding on left and right */
   font-size: 0.9rem;
-  color: #555;
+  color:white;
   border-top: 2px solid #e0e0e0;
   display: flex;
   flex-direction: column;
@@ -40,7 +40,7 @@
 
 .footer-section h4 {
   margin-bottom: 10px;
-  color: #333;
+  color: white;
   font-size: 1.1rem; /* Slightly larger font size */
 }
 
@@ -59,7 +59,7 @@
 .social-links a,
 .quick-links ul li a {
   text-decoration: none;
-  color: #0073e6;
+  color: white;
   font-weight: bold;
   display: flex;
   align-items: center;
@@ -98,7 +98,7 @@
 .footer-bottom {
   text-align: center;
   font-size: 1rem;
-  color: #333;
+  color: white;
   margin-top: 20px;
 }
 

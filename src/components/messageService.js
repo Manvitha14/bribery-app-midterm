@@ -1,48 +1,42 @@
+import { decryptToken } from '../authUtils';
 export async function fetchMessageHistory(senderId, receiverId, lastEvaluatedKey = null, limit = 10) {
   try {
+    const jwtToken = sessionStorage.getItem('jwt');  
+    const token = decryptToken(jwtToken);
+    
+    console.log("Fetching message history:", { senderId, receiverId, lastEvaluatedKey, limit });
+
     const response = await fetch("https://8jtaj9psal.execute-api.eu-west-1.amazonaws.com/Dev", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: "Bearer ",
+        Authorization: `Bearer ${token}`,
       },
-      body: JSON.stringify({
-        senderId: senderId,
-        receiverId: receiverId,
-        lastEvaluatedKey: lastEvaluatedKey, // Pass last evaluated key for pagination
-        limit: limit,
-      }),
+      body: JSON.stringify({ senderId, receiverId, lastEvaluatedKey, limit }),
     });
 
+    console.log("API response status:", response.status);
+
     if (!response.ok) {
+      console.error("Response not OK:", response.status, response.statusText);
       throw new Error("Failed to fetch message history.");
     }
 
     const responseBody = await response.json();
-    const data = JSON.parse(responseBody.body);
+    console.log("API response body:", responseBody);
 
-    const messages = data.messages.map((msg) => {
-      // Convert the timestamp to a Date object
-      const date = new Date(msg.timestamp);
-      console.log(date);
-      // Adjust to IST (UTC + 5:30)
-      const istOffset = 5.5 * 60 * 60 * 1000;
-      const istDate = new Date(date.getTime() + istOffset);
-      console.log(istDate);
-      // Format the IST date to a readable string and update the message object
-      msg.timestamp = istDate; // Format as 'YYYY-MM-DD HH:MM:SS'
-      console.log(msg.timestamp);
-      return msg;
-    });
+    const data = JSON.parse(responseBody.body || "{}");
+    console.log("Parsed data:", data);
 
-    const newLastEvaluatedKey = data.lastEvaluatedKey || null;
+    const messages = (data.messages || []).map((msg) => ({
+      ...msg,
+      timestamp: new Date(new Date(msg.timestamp).getTime() + 5.5 * 60 * 60 * 1000).toISOString(), // Adjust to IST
+    }));
+    console.log("Formatted messages:", messages);
 
-    console.log("Converted messages:", messages);
-    console.log("Extracted lastEvaluatedKey:", newLastEvaluatedKey);
-
-    return { messages, lastEvaluatedKey: newLastEvaluatedKey };
+    return { messages, lastEvaluatedKey: data.lastEvaluatedKey || null };
   } catch (error) {
-    console.error("Error fetching message history:", error);
+    console.error("Error in fetchMessageHistory:", error);
     return { messages: [], lastEvaluatedKey: null };
   }
 }

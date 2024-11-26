@@ -195,6 +195,29 @@ function VictimDetails({ formData, setFormData }) {
           />
         </div>
 
+         {/* Date of Incident */}
+         <div>
+          <Typography sx={{ marginBottom: '0.5rem', fontWeight: 500 }}>
+            Case Applied <span style={{ color: 'red' }}>*</span>
+          </Typography>
+          <TextField
+            fullWidth
+            type="date"
+            value={formData.caseAppliedTime}
+            onChange={handleChange('dateOfIncident')}
+            onBlur={handleBlur('dateOfIncident')}
+            error={!!errors.dateOfIncident}
+            helperText={errors.dateOfIncident}
+            sx={{
+              backgroundColor: '#f9f9f9',
+              borderRadius: 2,
+            }}
+            InputLabelProps={{
+              shrink: true,
+            }}
+          />
+        </div>
+
         {/* Time of Incident */}
         <div>
           <Typography sx={{ marginBottom: '0.5rem', fontWeight: 500 }}>

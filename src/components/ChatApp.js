@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import websocketService from "./websocketService";
 import { fetchMessageHistory } from "./messageService";
+import { Tooltip } from "@mui/material";
 
 const ChatApp = ({ connectionId, receiverId, onBack }) => {
   const [messages, setMessages] = useState([]);
@@ -12,39 +13,30 @@ const ChatApp = ({ connectionId, receiverId, onBack }) => {
   const isFirstLoad = useRef(true);
 
   useEffect(() => {
-    console.log("Receiver ID:", receiverId); // Debug: Ensure receiverId is passed
-
     const loadHistory = async () => {
-      try {
-        const {
-          messages: history = [],
-          lastEvaluatedKey: newKey = null,
-        } = await fetchMessageHistory(connectionId, receiverId, lastEvaluatedKey);
+      const { messages: history, lastEvaluatedKey: newKey } = await fetchMessageHistory(
+        connectionId,
+        receiverId,
+        lastEvaluatedKey
+      );
 
-        console.log("Fetched History:", history); // Debug: Log fetched history
-        console.log("Last Evaluated Key:", newKey);
+      const parsedHistory = history.map((msg) => ({
+        ...msg,
+        isSent: msg.senderId === connectionId,
+      }));
 
-        const parsedHistory = history.map((msg) => ({
-          ...msg,
-          isSent: msg.senderId === connectionId,
-        }));
+      setMessages((prevMessages) => [...parsedHistory, ...prevMessages]);
+      setLastEvaluatedKey(newKey);
+      setUnreadCount(0);
 
-        setMessages((prevMessages) => [...parsedHistory, ...prevMessages]);
-        setLastEvaluatedKey(newKey);
-        setUnreadCount(0);
-
-        if (isFirstLoad.current) {
-          scrollToBottom();
-          isFirstLoad.current = false;
-        }
-      } catch (error) {
-        console.error("Error loading message history:", error);
+      if (isFirstLoad.current) {
+        scrollToBottom();
+        isFirstLoad.current = false;
       }
     };
 
     loadHistory();
 
-    // Initialize WebSocket connection
     if (!websocketService.ws || websocketService.ws.readyState !== WebSocket.OPEN) {
       websocketService.connect(connectionId, (message) => {
         const updatedMessage = {
@@ -59,31 +51,25 @@ const ChatApp = ({ connectionId, receiverId, onBack }) => {
       });
     }
 
-    // Clean up WebSocket connection on unmount
     return () => websocketService.close();
   }, [connectionId, receiverId]);
 
   const loadMoreMessages = async () => {
     if (!lastEvaluatedKey) return;
 
-    try {
-      const {
-        messages: history = [],
-        lastEvaluatedKey: newKey = null,
-      } = await fetchMessageHistory(connectionId, receiverId, lastEvaluatedKey);
+    const { messages: history, lastEvaluatedKey: newKey } = await fetchMessageHistory(
+      connectionId,
+      receiverId,
+      lastEvaluatedKey
+    );
 
-      console.log("Loading more messages:", history); // Debug: Log paginated messages
+    const parsedHistory = history.map((msg) => ({
+      ...msg,
+      isSent: msg.senderId === connectionId,
+    }));
 
-      const parsedHistory = history.map((msg) => ({
-        ...msg,
-        isSent: msg.senderId === connectionId,
-      }));
-
-      setMessages((prevMessages) => [...parsedHistory, ...prevMessages]);
-      setLastEvaluatedKey(newKey);
-    } catch (error) {
-      console.error("Error loading more messages:", error);
-    }
+    setMessages((prevMessages) => [...parsedHistory, ...prevMessages]);
+    setLastEvaluatedKey(newKey);
   };
 
   const handleScroll = () => {
@@ -117,6 +103,26 @@ const ChatApp = ({ connectionId, receiverId, onBack }) => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
+  // Helper to group messages by date
+  const groupMessagesByDate = (messages) => {
+    const grouped = [];
+    let currentDate = null;
+
+    messages.forEach((msg) => {
+      const msgDate = new Date(msg.timestamp).toLocaleDateString();
+
+      if (msgDate !== currentDate) {
+        grouped.push({ type: "date", content: msgDate });
+        currentDate = msgDate;
+      }
+      grouped.push(msg);
+    });
+
+    return grouped;
+  };
+
+  const groupedMessages = groupMessagesByDate(messages);
+
   return (
     <div style={styles.container}>
       <button onClick={onBack} style={styles.backButton}>
@@ -128,34 +134,41 @@ const ChatApp = ({ connectionId, receiverId, onBack }) => {
           <span style={styles.unreadCount}>({unreadCount})</span>
         )}
       </h2>
+
       <div
         ref={chatContainerRef}
         onScroll={handleScroll}
         style={styles.chatContainer}
       >
-        {messages.map((msg, index) => (
-          <div
-            key={index}
-            style={{
-              ...styles.messageWrapper,
-              justifyContent: msg.isSent ? "flex-end" : "flex-start",
-            }}
-          >
+        {groupedMessages.map((msg, index) =>
+          msg.type === "date" ? (
+            <div key={index} style={styles.dateSeparator}>
+              {msg.content}
+            </div>
+          ) : (
             <div
+              key={index}
               style={{
-                ...styles.messageBubble,
-                backgroundColor: msg.isSent ? "#daf8e3" : "#f1f0f0",
+                ...styles.messageWrapper,
+                justifyContent: msg.isSent ? "flex-end" : "flex-start",
               }}
             >
-              <div>{msg.content}</div>
-              <div style={styles.timestamp}>
-                {new Date(msg.timestamp).toLocaleTimeString()}{" "}
-                {msg.isSent && !msg.read && <span style={styles.singleCheck}>✔</span>}
-                {msg.read && msg.isSent && <span style={styles.doubleCheck}>✔✔</span>}
+              <div
+                style={{
+                  ...styles.messageBubble,
+                  backgroundColor: msg.isSent ? "#daf8e3" : "#f1f0f0",
+                }}
+              >
+                <div>{msg.content}</div>
+                <div style={styles.timestamp}>
+                  {new Date(msg.timestamp).toLocaleTimeString()}{" "}
+                  {msg.isSent && !msg.read && <span style={styles.singleCheck}>✔</span>}
+                  {msg.read && msg.isSent && <span style={styles.doubleCheck}>✔✔</span>}
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          )
+        )}
         <div ref={messagesEndRef} />
       </div>
       <div style={styles.inputWrapper}>
@@ -204,6 +217,17 @@ const styles = {
     height: "400px",
     overflowY: "auto",
     backgroundColor: "#f9f9f9",
+  },
+  dateSeparator: {
+    textAlign: "center",
+    margin: "10px 0",
+    color: "#888",
+    fontSize: "0.9em",
+    fontWeight: "bold",
+    backgroundColor: "#f1f0f0",
+    borderRadius: "5px",
+    padding: "5px 10px",
+    display: "inline-block",
   },
   messageWrapper: {
     display: "flex",

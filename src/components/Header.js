@@ -1,40 +1,70 @@
-import React from "react";
-import { useNavigate } from "react-router-dom"; // Import useNavigate for navigation
-import { FaHome } from "react-icons/fa"; // Import the home icon from react-icons
+import React, { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import "./Header.css";
-import logo from "../images/digipo.jpg"; // Import the image
+import logo from "../images/digipo.jpg"; // Import the logo image
+import { logout, decryptToken } from "../authUtils";
 
 const Header = () => {
   const navigate = useNavigate(); // Initialize navigation function
+  const [userDetails, setUserDetails] = useState(null);
+  const [showProfileDropdown, setShowProfileDropdown] = useState(false);
+  const profileRef = useRef(null); // Reference to the profile dropdown
 
-  // Logic for navigating to different routes
+  // Decode JWT and extract user details
+  const handleProfileClick = () => {
+    const token = sessionStorage.getItem("jwt");
+    if (!token) {
+      alert("No token found. Please log in.");
+      return;
+    }
+
+    try {
+      const decryptedToken = decryptToken(token);
+
+      // Decode JWT manually
+      const base64Url = decryptedToken.split(".")[1];
+      const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+      const decodedToken = JSON.parse(atob(base64));
+
+      const userData = {
+        name: decodedToken.name || "N/A",
+        email: decodedToken.email || "N/A",
+        role: decodedToken.role || "User",
+      };
+
+      setUserDetails(userData);
+      setShowProfileDropdown((prev) => !prev); // Toggle dropdown visibility
+    } catch (error) {
+      console.error("Error decoding token:", error);
+      alert("Failed to retrieve user details.");
+    }
+  };
+
+  // Close the profile dropdown when clicking outside
+  const handleClickOutside = (event) => {
+    if (profileRef.current && !profileRef.current.contains(event.target)) {
+      setShowProfileDropdown(false);
+    }
+  };
+
+  useEffect(() => {
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  // Navigation handlers
   const handleRegisterComplaint = () => {
-    navigate("/complaint-form"); // Navigate to the complaint form
+    navigate("/complaint-form");
   };
 
   const handleSeeAllCases = () => {
-    navigate("/see-all-cases"); // Navigate to /see-all-cases
+    navigate("/see-all-cases");
   };
 
   const handleResources = () => {
-    navigate("/resources"); // Navigate to the resources page
-  };
-
-  const handleProfile = () => {
-    navigate("/profile"); // Navigate to the user's profile page
-  };
-
-  const handleTrackStatus = () => {
-    navigate("/track-status"); // Navigate to the status tracking page
-  };
-
-  const handleLogout = () => {
-    console.log("User logged out.");
-    navigate("/login"); // Redirect to login page after logout
-  };
-
-  const handleBackToDigipo = () => {
-    navigate("/"); // Navigate back to the Digipo homepage
+    navigate("/resources");
   };
 
   return (
@@ -46,35 +76,32 @@ const Header = () => {
       <nav className="nav">
         <ul>
           <li>
-            <a href="#back" onClick={handleBackToDigipo}>
-              <FaHome style={{ marginRight: '8px', verticalAlign: 'middle' }} />
-              Back to Digipo
-            </a>
+            <a onClick={handleSeeAllCases}>📂 See All Cases</a>
           </li>
           <li>
-            <a href="#cases" onClick={handleSeeAllCases}>
-              📂 See All Cases
-            </a>
+            <a onClick={handleRegisterComplaint}>📝 Register a Complaint</a>
           </li>
           <li>
-            <a href="#register" onClick={handleRegisterComplaint}>
-              📝 Register a Complaint
-            </a>
+            <a onClick={handleResources}>📚 Resources</a>
+          </li>
+          <li ref={profileRef} className="profile-dropdown-container">
+            <a onClick={handleProfileClick}>Profile</a>
+            {showProfileDropdown && userDetails && (
+              <div className="profile-dropdown">
+                <p>
+                  <strong>Name:</strong> {userDetails.name}
+                </p>
+                <p>
+                  <strong>Email:</strong> {userDetails.email}
+                </p>
+                <p>
+                  <strong>Role:</strong> {userDetails.role}
+                </p>
+              </div>
+            )}
           </li>
           <li>
-            <a href="#resources" onClick={handleResources}>
-              📚 Resources
-            </a>
-          </li>
-          <li>
-            <a href="#profile" onClick={handleProfile}>
-              👤 Profile
-            </a>
-          </li>
-          <li>
-            <a href="#logout" onClick={handleLogout}>
-              🚪 Logout
-            </a>
+            <a onClick={logout}>Logout</a>
           </li>
         </ul>
       </nav>

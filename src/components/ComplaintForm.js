@@ -5,14 +5,14 @@ import VictimDetails from './VictimDetails';
 import EvidenceUpload from './EvidenceUpload';
 import Review from './Review';
 import BackToHomeButton from './BachToHomeButton';
-
+import { decryptToken } from '../authUtils';
 function ComplaintForm() {
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     complaintCategory: '',
     fullName: '',
     phoneNumber: '',
-    emailAddress: '',
+    email: '',
     address: '',
     victimName: '',
     victimAge: '',
@@ -26,7 +26,7 @@ function ComplaintForm() {
 
   const [isChecked, setIsChecked] = useState(false); // Checkbox state
   const [errors, setErrors] = useState({}); // Validation errors
-
+  
   // Validation function for each step
   const validateStep = () => {
     switch (step) {
@@ -52,6 +52,8 @@ function ComplaintForm() {
     setErrors((prev) => ({ ...prev, complaintCategory: '' }));
     return true;
   };
+
+  const caseAppliedTime = new Date().toISOString();
 
   // Victim Details validation (Step 2)
   const validateVictimDetails = () => {
@@ -80,7 +82,7 @@ function ComplaintForm() {
     if (!formData.dateOfIncident) {
       tempErrors.dateOfIncident = 'Date of incident is required.';
       isValid = false;
-    }
+  }
     setErrors((prev) => ({ ...prev, ...tempErrors }));
     return isValid;
   };
@@ -128,27 +130,30 @@ function ComplaintForm() {
         suspect_name: formData.suspectName,
         suspect_profession: formData.suspectProfession,
         location: formData.location,
+        email:formData.email,
         date_of_incident: formData.dateOfIncident,
+        caseappliedtime: caseAppliedTime,
         evidence_description: formData.evidenceDescription,
       });
 
       const payload = {
         categoryid: 23,
         userid: "user182",
-        policeid: "user007",
+        policeid: "user107",
         reasonforwithdrawal: null,
         iswithdrawalaccepted: 0,
         iswithdrawn: 0,
         iscomplaintaccepted: 0,
         isfake: 0,
-        casestatus: 'Complaint Registered',
+        casestatus: 'under investigation',
         isfirfiled: 0,
         individualdetails: individualDetails,
       };
 
       console.log('Payload:', payload);
-
-      const token = "eyJraWQiOiJPMGgyenNCR2lacnlSTzBkNklqdDI1SzdteldpREJKejdhK0lBV2R6XC9yVT0iLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOiIyODUxMDM0MC1lMGExLTcwOTgtZDAyNi03NDY4ZmQzOWFiMmQiLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwiYmlydGhkYXRlIjoiMjAwMy0wMS0xNCIsImdlbmRlciI6ImZlbWFsZSIsImlzcyI6Imh0dHBzOlwvXC9jb2duaXRvLWlkcC51cy13ZXN0LTIuYW1hem9uYXdzLmNvbVwvdXMtd2VzdC0yX1FQdUpmT2FGYyIsInBob25lX251bWJlcl92ZXJpZmllZCI6ZmFsc2UsImNvZ25pdG86dXNlcm5hbWUiOiIyODUxMDM0MC1lMGExLTcwOTgtZDAyNi03NDY4ZmQzOWFiMmQiLCJvcmlnaW5fanRpIjoiYmVjOTQyMjctZTUyMi00MTJmLWJhN2YtNmM2N2Y3ZTkzNWYyIiwiYXVkIjoiMm1udjE3dm9hN2U4cTZiYW5sZzBqMHF0aCIsImV2ZW50X2lkIjoiZTEzYzc5MzctZGZlMy00MjEzLTlkYzAtYmU1MWNmYTZhN2Q2IiwidG9rZW5fdXNlIjoiaWQiLCJhdXRoX3RpbWUiOjE3MzIxODg2NjMsIm5hbWUiOiJNYW53aXRoYSIsInBob25lX251bWJlciI6Iis5MTYzMDQzNDI0OTQiLCJleHAiOjE3MzIyNzUwNjMsImN1c3RvbTpyb2xlIjoidXNlciIsImlhdCI6MTczMjE4ODY2MywianRpIjoiMjBiZWMzMjEtYTQxYS00OWE1LWI2ZDMtZDkxOTk1ZGQyZjAzIiwiZW1haWwiOiJtYW5udTE5ODIwMjRAZ21haWwuY29tIn0.D6pJ1rtc3kBOE64rFNi2myhn-NmcFHDyRYgTbfagjOt9lecJS7gpHtuEtWttm5qHwZtJGAg12Z_WY07nuX3WO5CFosUL3cOzBty6SXW9MbFq0Ly_-Mq994wIufXBDez6zqpYxNC2F96mKbW9wnhOLo7CzTfbPxDv4L8_F1A0c_rd5H8YjENlUPgcsrqbVl5itPSkbpkjnIRrhYucwVc7hZsgr4rtAPRCWASkZvt3EfcM_Wv-asrVoym2bI4SaRBPZxKm1Fl7JzL4FKP5B2Fx_9R4LjVE2kwgvT9_-Jo17h2snc-m1RksYx6FelXRVD3N7Y0BwpSHotaVWdT_iutCrg";
+      const jwtToken = sessionStorage.getItem('jwt');  
+      const token = decryptToken(jwtToken);
+     // const token = "eyJraWQiOiJPMGgyenNCR2lacnlSTzBkNklqdDI1SzdteldpREJKejdhK0lBV2R6XC9yVT0iLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOiIyODUxMDM0MC1lMGExLTcwOTgtZDAyNi03NDY4ZmQzOWFiMmQiLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwiYmlydGhkYXRlIjoiMjAwMy0wMS0xNCIsImdlbmRlciI6ImZlbWFsZSIsImlzcyI6Imh0dHBzOlwvXC9jb2duaXRvLWlkcC51cy13ZXN0LTIuYW1hem9uYXdzLmNvbVwvdXMtd2VzdC0yX1FQdUpmT2FGYyIsInBob25lX251bWJlcl92ZXJpZmllZCI6ZmFsc2UsImNvZ25pdG86dXNlcm5hbWUiOiIyODUxMDM0MC1lMGExLTcwOTgtZDAyNi03NDY4ZmQzOWFiMmQiLCJvcmlnaW5fanRpIjoiMzdkN2U5OGQtNzFlOC00NDMyLWIwOWQtYTQ4MGU4NGZjNDgwIiwiYXVkIjoiMm1udjE3dm9hN2U4cTZiYW5sZzBqMHF0aCIsImV2ZW50X2lkIjoiYWYzN2ZlMDQtNjkxYS00MDBjLWE0ZTctZTUwMjliOGY2YzEzIiwidG9rZW5fdXNlIjoiaWQiLCJhdXRoX3RpbWUiOjE3MzI1MDYyMzksIm5hbWUiOiJNYW53aXRoYSIsInBob25lX251bWJlciI6Iis5MTYzMDQzNDI0OTQiLCJleHAiOjE3MzI1OTI2MzksImN1c3RvbTpyb2xlIjoidXNlciIsImlhdCI6MTczMjUwNjIzOSwianRpIjoiMDU0ZDdmYjYtMTZjZS00MjQ2LWI1NWUtNjUwNTczZDMxYjA5IiwiZW1haWwiOiJtYW5udTE5ODIwMjRAZ21haWwuY29tIn0.EZ9mO0nT0jKOrPD5zVxMXfXoOeAvWO8TgEyCMeRwCdabt2yZOF1OUPsWVUT8onMbZUzpCzua4EJ_YOUPeZvoZRtm62FZKhEpe69wmG4p3uOuOfHAdcnqJzfjqKtTkWZiRdBmAaGA_lOEINFDWmUoTrR-sR35SwgOcr8uenpoJ8kR5f6AisNj1_m3IIm_gmBB-reAEip6Y7RMGQUD0kub6vgrp1sJfd6KhP_BIOTYK9Q4kCzrBX69nBIx-nbVFzCVEk86UV0ueylVZkIAQTEbB96exae3Nu5wzmxD6m4GTBDSyLe9Nskl9afXUhLfkYrGPV2kdgozHf8ociDwtkeQWw";
       const response = await axios.post(
         'https://x4xn6amqo2.execute-api.eu-west-2.amazonaws.com/UserComplaints',
         payload,
@@ -181,6 +186,8 @@ function ComplaintForm() {
           console.log('Evidence payload:', evidencePayload);
 
           try {
+            const jwtToken = sessionStorage.getItem('jwt');  
+            const token = decryptToken(jwtToken);
             const uploadResponse = await axios.post(
               'https://kz6gmd08a6.execute-api.ap-northeast-2.amazonaws.com/dev/uploadvideo',
               { body: evidencePayload },
@@ -214,7 +221,65 @@ function ComplaintForm() {
       } else {
         console.log('No evidence files to upload.');
       }
+      const whatsappPayload = {
+        "to": `+91${formData.phoneNumber}`,
+        "message": "You have successfully filed a case on the Drug Division portal of DiGiPo."
+      }
+      
+      console.log("WhatsApp URL:", process.env.REACT_APP_WHATSAPP_URL);
+      const apiResponse = await axios.post(
+        process.env.REACT_APP_WHATSAPP_URL,
+        whatsappPayload,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+           },
+        }
+      );
 
+      console.log(apiResponse);
+
+      const emailPayload = {
+        recipient_email: formData.email, // Use the victim's email
+        subject: "Case Registered Successfully",
+        message_body: `Your case has been registered successfully.`,
+      };
+ 
+      // Log the email payload
+      console.log("Email payload:", emailPayload);
+ 
+      // Make the POST request to send the email
+      const emailApi =   `https://8wy1xykpmk.execute-api.us-east-2.amazonaws.com/dev/withoutPdf`;
+ 
+      const snsResponse = await fetch(emailApi, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(emailPayload),
+      });
+ 
+      // Log the SNS response for debugging
+      console.log("SNS Response:", snsResponse);
+ 
+      // Parse the SNS response body
+      const snsResponseBody = await snsResponse.json();
+      console.log("SNS Response Body:", snsResponseBody);
+ 
+      if (!snsResponse.ok) {
+        console.error(
+          "Failed to send email:",
+          snsResponse.status,
+          snsResponseBody.message
+        );
+        throw new Error(
+          `Email API error: ${snsResponseBody.message || "Unknown error"}`
+        );
+      } else {
+        console.log("Email sent successfully:", snsResponseBody);
+      }   
       alert('Complaint submitted successfully!');
     } catch (error) {
       console.error('Error submitting complaint:', error);

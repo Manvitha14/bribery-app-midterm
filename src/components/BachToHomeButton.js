@@ -5,7 +5,7 @@ const BackToHomeButton = () => {
   const navigate = useNavigate(); // Initialize navigate
 
   const handleBackToHome = () => {
-    navigate('/'); // Adjust the path based on your app's structure
+    navigate('/home'); // Adjust the path based on your app's structure
   };
 
   return (
