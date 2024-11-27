@@ -10,6 +10,8 @@ import Resources from "./components/Resources";
 import SeeAllCases from "./components/SeeAllCases";
 import CaseDetails from "./components/CaseDetail";
 import { OverlayProvider, useOverlay } from "./components/OverlayContext"; // Import the context
+import Meeting from './components/Meeting';
+import JoinMeeting from './components/joinMeet';
 
 const AppRoutes = () => {
   const location = useLocation();
@@ -46,6 +48,8 @@ const AppRoutes = () => {
       <Route path="/resources" element={<Resources />} />
       <Route path="/see-all-cases" element={<SeeAllCases />} />
       <Route path="/case/:caseId" element={<CaseDetails />} />
+      <Route path="/meetings/:caseId" element={<Meeting />} />
+      <Route path="/joinmeeting/:meetingId" element={<JoinMeeting />} />
     </Routes>
   );
 };

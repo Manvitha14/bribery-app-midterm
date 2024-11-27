@@ -3,6 +3,7 @@ import axios from 'axios';
 import { jwtDecode } from 'jwt-decode'; 
 import ChatApp from './ChatApp';
 import { generateFIRCopy } from "./pdfUtils";
+import VideoCameraFrontIcon from '@mui/icons-material/VideoCameraFront';
 import { jsPDF } from 'jspdf';
 import CheckCircleOutline from "@mui/icons-material/CheckCircleOutline";
 import {
@@ -49,8 +50,8 @@ const SeeAllCases = () => {
     const [activeDialog, setActiveDialog] = useState(null);
     const [withdrawStatus, setWithdrawStatus] = useState(null);
     const [activeChatCase, setActiveChatCase] = useState(null); // Track the active case for chat
-    const [connectionId, setConnectionId] = useState("user182");
-    const [receiverId, setReceiverId] = useState("UID400");
+    const [connectionId, setConnectionId] = useState();
+    const [receiverId, setReceiverId] = useState();
     const [caseToWithdraw, setCaseToWithdraw] = useState(null);  // Track the case selected for withdrawal
     const [isChatOpen, setIsChatOpen] = useState({});
     const [selectedChat, setSelectedChat] = useState(null);
@@ -83,33 +84,33 @@ const SeeAllCases = () => {
       };
     
      
-      const handleSearch = () => {
-        if (!searchTerm.trim()) {
-          setFilteredCases(cases); // Show all cases if search is empty
-          return;
-        }
+      // const handleSearch = () => {
+      //   if (!searchTerm.trim()) {
+      //     setFilteredCases(cases); // Show all cases if search is empty
+      //     return;
+      //   }
       
-        const results = cases.filter(
-          (caseItem) =>
-            caseItem.complaintid &&
-            caseItem.complaintid.toString().toLowerCase().includes(searchTerm.trim().toLowerCase())
-        );
+      //   const results = cases.filter(
+      //     (caseItem) =>
+      //       caseItem.complaintid &&
+      //       caseItem.complaintid.toString().toLowerCase().includes(searchTerm.trim().toLowerCase())
+      //   );
       
-        console.log("Search Term:", searchTerm);
-        console.log("Filtered Results:", results);
+      //   console.log("Search Term:", searchTerm);
+      //   console.log("Filtered Results:", results);
       
-        setFilteredCases(results);
-      };
+      //   setFilteredCases(results);
+      // };
       
       
-      const handleSearchChange = (event) => {
-        setSearchTerm(event.target.value); // Update search term
-      };
+      // const handleSearchChange = (event) => {
+      //   setSearchTerm(event.target.value); // Update search term
+      // };
   const navigate = useNavigate();
 
- 
+  const username = sessionStorage.getItem("userName");
   const targetCategoryId = 23;
-  const targetUserId = 'user182';
+  const targetUserId = username;
 
  
   useEffect(() => {
@@ -167,7 +168,9 @@ const SeeAllCases = () => {
     fetchCases();
   }, [token, targetUserId, targetCategoryId]);
   
-  
+  const handleScheduleMeeting = (caseId) => {
+    navigate(`/meetings/${caseId}`);
+};
   const handleViewDetails = (caseItem) => {
     const parsedDetails =
       typeof caseItem.individualdetails === 'string'
@@ -193,18 +196,6 @@ const SeeAllCases = () => {
   const handleBackToHome = () => {
     navigate('/home');
   };
-
-//   const handleChatOpen = (caseId) => {
-//     console.log("Opening chat for case", caseId);
-//     setIsChatOpen((prevState) => ({ ...prevState, [caseId]: true }));
-//   };
-  
-//   // Close chat for a specific case
-//   const handleChatClose = (caseId) => {
-//     console.log("Closing chat for case", caseId); 
-//     setIsChatOpen((prevState) => ({ ...prevState, [caseId]: false }));
-//   };
-
 const handleChatOpen = (complaintid) => {
     const selectedCase = cases.find((caseItem) => caseItem.complaintid === complaintid);
     if (selectedCase) {
@@ -342,7 +333,7 @@ const handleChatOpen = (complaintid) => {
     >
       Cases
     </Typography>
-    {/* Search Bar */}
+    {/* Search Bar
 <Box mb={4}>
   <Paper
     component="form"
@@ -368,7 +359,7 @@ const handleChatOpen = (complaintid) => {
       <SearchIcon />
     </IconButton>
   </Paper>
-</Box>
+</Box> */}
 
   
     <Grid container spacing={3}>
@@ -551,6 +542,26 @@ const handleChatOpen = (complaintid) => {
               >
                 Chat
               </Button>
+
+              <Button
+  variant="outlined"
+  size="small"
+  startIcon={<VideoCameraFrontIcon />} // Use an appropriate icon, e.g., from Material-UI
+  sx={{
+    borderColor: '#e63946',
+    color: '#e63946',
+    '&:hover': {
+      backgroundColor: '#e63946',
+      color: '#fff',
+    },
+  }}
+  onClick={()=>{
+    handleScheduleMeeting(caseItem.complaintid)
+  }}
+>
+  Video
+</Button>
+
                 {/* Chat Sidebar */}
     {Object.keys(isChatOpen).map((complaintid) =>
       isChatOpen[complaintid] ? (
@@ -605,21 +616,24 @@ const handleChatOpen = (complaintid) => {
     console.log(selected.receiverId);
   </Box>
 )}
-              <Button
-  variant="outlined"
-  size="small"
-  sx={{
-    borderColor: "#457b9d",
-    color: "#457b9d",
-    "&:hover": {
-      backgroundColor: "#457b9d",
-      color: "#fff",
-    },
-  }}
-  onClick={() => generateFIRCopy(caseItem)} // Updated to call the imported function
->
-  Download as PDF
-</Button>
+             {caseItem.firfiled === 1 && (
+  <Button
+    variant="outlined"
+    size="small"
+    sx={{
+      borderColor: "#457b9d",
+      color: "#457b9d",
+      "&:hover": {
+        backgroundColor: "#457b9d",
+        color: "#fff",
+      },
+    }}
+    onClick={() => generateFIRCopy(caseItem)} // Updated to call the imported function
+  >
+    Download as PDF
+  </Button>
+)}
+
             </Box>
           </Card>
         </Grid>

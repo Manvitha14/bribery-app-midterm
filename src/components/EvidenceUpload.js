@@ -25,7 +25,7 @@ function EvidenceUpload({ formData, setFormData }) {
 
   return (
     <div>
-      <Typography variant="h5" gutterBottom sx={{ marginBottom: '1rem', fontWeight: 600, color: '#333' }}>
+      <Typography variant="h5" gutterBottom sx={{ marginBottom: '1np,rem', fontWeight: 600, color: '#333' }}>
         Step 3: Upload Evidence
       </Typography>
 

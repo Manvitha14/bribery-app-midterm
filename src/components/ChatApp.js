@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import websocketService from "./websocketService";
 import { fetchMessageHistory } from "./messageService";
-import { Tooltip } from "@mui/material";
 
 const ChatApp = ({ connectionId, receiverId, onBack }) => {
   const [messages, setMessages] = useState([]);
@@ -10,46 +9,45 @@ const ChatApp = ({ connectionId, receiverId, onBack }) => {
   const [lastEvaluatedKey, setLastEvaluatedKey] = useState(null);
   const messagesEndRef = useRef(null);
   const chatContainerRef = useRef(null);
-  const isFirstLoad = useRef(true);
+  const hasFetchedHistory = useRef(false);
 
   useEffect(() => {
-    const loadHistory = async () => {
-      const { messages: history, lastEvaluatedKey: newKey } = await fetchMessageHistory(
-        connectionId,
-        receiverId,
-        lastEvaluatedKey
-      );
+    const initializeChat = async () => {
+      if (!hasFetchedHistory.current) {
+        hasFetchedHistory.current = true;
+        const { messages: history, lastEvaluatedKey: newKey } = await fetchMessageHistory(
+          connectionId,
+          receiverId,
+          null
+        );
 
-      const parsedHistory = history.map((msg) => ({
-        ...msg,
-        isSent: msg.senderId === connectionId,
-      }));
+        const parsedHistory = history.map((msg) => ({
+          ...msg,
+          isSent: msg.senderId === connectionId,
+        }));
 
-      setMessages((prevMessages) => [...parsedHistory, ...prevMessages]);
-      setLastEvaluatedKey(newKey);
-      setUnreadCount(0);
-
-      if (isFirstLoad.current) {
+        setMessages(parsedHistory);
+        setLastEvaluatedKey(newKey);
+        setUnreadCount(0);
         scrollToBottom();
-        isFirstLoad.current = false;
+      }
+
+      if (!websocketService.ws || websocketService.ws.readyState !== WebSocket.OPEN) {
+        websocketService.connect(connectionId, (message) => {
+          const updatedMessage = {
+            ...message,
+            isSent: message.senderId === connectionId,
+          };
+          setMessages((prevMessages) => [...prevMessages, updatedMessage]);
+          if (!updatedMessage.isSent) {
+            setUnreadCount((prevCount) => prevCount + 1);
+          }
+          scrollToBottom();
+        });
       }
     };
 
-    loadHistory();
-
-    if (!websocketService.ws || websocketService.ws.readyState !== WebSocket.OPEN) {
-      websocketService.connect(connectionId, (message) => {
-        const updatedMessage = {
-          ...message,
-          isSent: message.senderId === connectionId,
-        };
-        setMessages((prevMessages) => [...prevMessages, updatedMessage]);
-        if (!updatedMessage.isSent) {
-          setUnreadCount((prevCount) => prevCount + 1);
-        }
-        scrollToBottom();
-      });
-    }
+    initializeChat();
 
     return () => websocketService.close();
   }, [connectionId, receiverId]);
@@ -73,7 +71,7 @@ const ChatApp = ({ connectionId, receiverId, onBack }) => {
   };
 
   const handleScroll = () => {
-    if (chatContainerRef.current.scrollTop === 0 && !isFirstLoad.current) {
+    if (chatContainerRef.current.scrollTop === 0) {
       loadMoreMessages();
     }
   };
@@ -103,173 +101,146 @@ const ChatApp = ({ connectionId, receiverId, onBack }) => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  // Helper to group messages by date
-  const groupMessagesByDate = (messages) => {
-    const grouped = [];
-    let currentDate = null;
-
-    messages.forEach((msg) => {
-      const msgDate = new Date(msg.timestamp).toLocaleDateString();
-
-      if (msgDate !== currentDate) {
-        grouped.push({ type: "date", content: msgDate });
-        currentDate = msgDate;
-      }
-      grouped.push(msg);
-    });
-
-    return grouped;
-  };
-
-  const groupedMessages = groupMessagesByDate(messages);
-
   return (
-    <div style={styles.container}>
-      <button onClick={onBack} style={styles.backButton}>
-        Back to Conversations
-      </button>
-      <h2 style={styles.header}>
-        Chat with {receiverId || "Unknown Receiver"}
+    <div style={{ display: "flex", flexDirection: "column", height: "100vh", fontFamily: "Arial, sans-serif" }}>
+      {/* Chat Header */}
+      <div style={{
+        padding: "15px",
+        backgroundColor: "#0088cc",
+        color: "#fff",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        fontSize: "18px",
+        fontWeight: "bold"
+      }}>
+        <button
+          onClick={onBack}
+          style={{
+            backgroundColor: "#005f99",
+            color: "#fff",
+            border: "none",
+            borderRadius: "5px",
+            padding: "8px 15px",
+            cursor: "pointer",
+            fontSize: "16px"
+          }}
+        >
+          Back
+        </button>
+        <span>Police Chat</span>
         {unreadCount > 0 && (
-          <span style={styles.unreadCount}>({unreadCount})</span>
+          <span style={{
+            fontSize: "14px",
+            color: "yellow",
+            marginLeft: "10px",
+            fontWeight: "bold"
+          }}>
+            ({unreadCount} New)
+          </span>
         )}
-      </h2>
+      </div>
 
+      {/* Chat Messages */}
       <div
         ref={chatContainerRef}
         onScroll={handleScroll}
-        style={styles.chatContainer}
+        style={{
+          flex: 1,
+          padding: "15px",
+          overflowY: "auto",
+          backgroundColor: "#f9f9f9",
+          borderBottom: "1px solid #ccc",
+        }}
       >
-        {groupedMessages.map((msg, index) =>
-          msg.type === "date" ? (
-            <div key={index} style={styles.dateSeparator}>
-              {msg.content}
-            </div>
-          ) : (
-            <div
-              key={index}
-              style={{
-                ...styles.messageWrapper,
-                justifyContent: msg.isSent ? "flex-end" : "flex-start",
-              }}
-            >
+        {messages.map((msg, index) => (
+          <div key={index} style={{ margin: "10px 0" }}>
+            {msg.type === "date" ? (
               <div
                 style={{
-                  ...styles.messageBubble,
-                  backgroundColor: msg.isSent ? "#daf8e3" : "#f1f0f0",
+                  textAlign: "center",
+                  color: "#888",
+                  fontSize: "12px",
+                  padding: "5px",
+                  backgroundColor: "#e0e0e0",
+                  borderRadius: "15px",
+                  width: "auto",
+                  margin: "0 auto",
+                  maxWidth: "200px"
                 }}
               >
-                <div>{msg.content}</div>
-                <div style={styles.timestamp}>
-                  {new Date(msg.timestamp).toLocaleTimeString()}{" "}
-                  {msg.isSent && !msg.read && <span style={styles.singleCheck}>✔</span>}
-                  {msg.read && msg.isSent && <span style={styles.doubleCheck}>✔✔</span>}
+                {msg.content}
+              </div>
+            ) : (
+              <div style={{ display: "flex", justifyContent: msg.isSent ? "flex-end" : "flex-start" }}>
+                <div
+                  style={{
+                    maxWidth: "70%",
+                    padding: "12px",
+                    borderRadius: "20px",
+                    backgroundColor: msg.isSent ? "#dcf8c6" : "#fff",
+                    boxShadow: "0px 2px 5px rgba(0, 0, 0, 0.1)",
+                    fontSize: "14px",
+                    color: "#333"
+                  }}
+                >
+                  {msg.content}
+                  <div style={{ fontSize: "0.8em", color: "#555", textAlign: "right", marginTop: "5px" }}>
+                    {new Date(msg.timestamp).toLocaleTimeString()}
+                    {msg.isSent && !msg.read && <span style={{ color: "gray", marginLeft: "5px" }}>✔</span>}
+                    {msg.read && msg.isSent && <span style={{ color: "blue", marginLeft: "5px" }}>✔✔</span>}
+                  </div>
                 </div>
               </div>
-            </div>
-          )
-        )}
+            )}
+          </div>
+        ))}
         <div ref={messagesEndRef} />
       </div>
-      <div style={styles.inputWrapper}>
+
+      {/* Message Input Box */}
+      <div style={{
+        padding: "10px",
+        backgroundColor: "#f7f7f7",
+        borderTop: "1px solid #ccc",
+        display: "flex",
+        alignItems: "center"
+      }}>
         <input
           type="text"
           value={inputMessage}
           onChange={(e) => setInputMessage(e.target.value)}
-          placeholder="Type your message..."
-          style={styles.inputField}
+          placeholder="Type a message..."
+          style={{
+            flex: 1,
+            padding: "10px",
+            borderRadius: "20px",
+            border: "1px solid #ccc",
+            outline: "none",
+            fontSize: "14px"
+          }}
         />
-        <button onClick={handleSendMessage} style={styles.sendButton}>
-          Send
+        <button
+          onClick={handleSendMessage}
+          style={{
+            backgroundColor: "#0088cc",
+            color: "#fff",
+            border: "none",
+            borderRadius: "50%",
+            width: "40px",
+            height: "40px",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            cursor: "pointer",
+            marginLeft: "10px"
+          }}
+        >
+          📤
         </button>
       </div>
     </div>
   );
-};
-
-const styles = {
-  container: {
-    padding: "20px",
-    maxWidth: "600px",
-    margin: "auto",
-    fontFamily: "'Arial', sans-serif",
-  },
-  backButton: {
-    backgroundColor: "#f44336",
-    color: "#fff",
-    border: "none",
-    borderRadius: "5px",
-    padding: "10px 15px",
-    cursor: "pointer",
-  },
-  header: {
-    textAlign: "center",
-    color: "#333",
-  },
-  unreadCount: {
-    fontSize: "small",
-    color: "red",
-  },
-  chatContainer: {
-    border: "1px solid #ccc",
-    borderRadius: "10px",
-    padding: "10px",
-    height: "400px",
-    overflowY: "auto",
-    backgroundColor: "#f9f9f9",
-  },
-  dateSeparator: {
-    textAlign: "center",
-    margin: "10px 0",
-    color: "#888",
-    fontSize: "0.9em",
-    fontWeight: "bold",
-    backgroundColor: "#f1f0f0",
-    borderRadius: "5px",
-    padding: "5px 10px",
-    display: "inline-block",
-  },
-  messageWrapper: {
-    display: "flex",
-    margin: "10px 0",
-  },
-  messageBubble: {
-    maxWidth: "70%",
-    padding: "10px",
-    borderRadius: "10px",
-    boxShadow: "0px 2px 5px rgba(0, 0, 0, 0.1)",
-  },
-  timestamp: {
-    fontSize: "0.8em",
-    color: "#555",
-    textAlign: "right",
-    marginTop: "5px",
-  },
-  singleCheck: {
-    color: "gray",
-  },
-  doubleCheck: {
-    color: "blue",
-  },
-  inputWrapper: {
-    display: "flex",
-    marginTop: "10px",
-  },
-  inputField: {
-    flex: "1",
-    padding: "10px",
-    border: "1px solid #ccc",
-    borderRadius: "5px 0 0 5px",
-    outline: "none",
-  },
-  sendButton: {
-    backgroundColor: "#4CAF50",
-    color: "#fff",
-    border: "none",
-    borderRadius: "0 5px 5px 0",
-    padding: "10px 15px",
-    cursor: "pointer",
-  },
 };
 
 export default ChatApp;

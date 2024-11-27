@@ -281,7 +281,7 @@ const Resources = () => {
       <Box sx={{ textAlign: "center", marginTop: "30px" }}>
         <Button
           component={Link}
-          to="/"
+          to="/home"
           variant="contained"
           sx={{
             backgroundColor: "#3f51b5",

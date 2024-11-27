@@ -101,20 +101,7 @@ const HomePage = () => {
           </ul>
         </section>
 
-        {/* Statistics Section */}
-        <section className="statistics">
-          <h3>Statistics</h3>
-          <div className="stats">
-            <div className="stat-item">
-              <h4>1000+</h4>
-              <p>Complaints Registered</p>
-            </div>
-            <div className="stat-item">
-              <h4>500+</h4>
-              <p>Cases Resolved</p>
-            </div>
-          </div>
-        </section>
+       
 
         {/* Call to Action Section */}
         <section className="cta">

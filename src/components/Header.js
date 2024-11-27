@@ -84,6 +84,10 @@ const Header = () => {
           <li>
             <a onClick={handleResources}>📚 Resources</a>
           </li>
+          <li>
+            <a >🌐 </a>
+          </li>
+
           <li ref={profileRef} className="profile-dropdown-container">
             <a onClick={handleProfileClick}>Profile</a>
             {showProfileDropdown && userDetails && (

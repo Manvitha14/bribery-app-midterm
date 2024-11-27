@@ -6,6 +6,11 @@ import EvidenceUpload from './EvidenceUpload';
 import Review from './Review';
 import BackToHomeButton from './BachToHomeButton';
 import { decryptToken } from '../authUtils';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom';
+
 function ComplaintForm() {
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
@@ -20,13 +25,14 @@ function ComplaintForm() {
     suspectName: '',
     location: '',
     dateOfIncident: '',
+    ComplaintDescription:'',
     evidenceDescription: '',
     evidenceFiles: [],
   });
 
   const [isChecked, setIsChecked] = useState(false); // Checkbox state
   const [errors, setErrors] = useState({}); // Validation errors
-  
+  const navigate= useNavigate();
   // Validation function for each step
   const validateStep = () => {
     switch (step) {
@@ -34,8 +40,8 @@ function ComplaintForm() {
         return validateCase(); // Case step validation
       case 2:
         return validateVictimDetails(); // Victim Details validation
-      case 3:
-        return validateEvidenceUpload(); // Evidence Upload validation
+      // case 3:
+      //   return validateEvidenceUpload(); // Evidence Upload validation
       case 4:
         return validateReview(); // Review validation
       default:
@@ -88,14 +94,14 @@ function ComplaintForm() {
   };
 
   // Evidence Upload validation (Step 3)
-  const validateEvidenceUpload = () => {
-    if (formData.evidenceFiles.length === 0) {
-      setErrors((prev) => ({ ...prev, evidenceFiles: 'At least one evidence file is required.' }));
-      return false;
-    }
-    setErrors((prev) => ({ ...prev, evidenceFiles: '' }));
-    return true;
-  };
+  // const validateEvidenceUpload = () => {
+  //   if (formData.evidenceFiles.length === 0) {
+  //     setErrors((prev) => ({ ...prev, evidenceFiles: 'At least one evidence file is required.' }));
+  //     return false;
+  //   }
+  //   setErrors((prev) => ({ ...prev, evidenceFiles: '' }));
+  //   return true;
+  // };
 
   // Review validation (Step 4)
   const validateReview = () => {
@@ -116,36 +122,197 @@ function ComplaintForm() {
   const prevStep = () => {
     setStep((prev) => prev - 1);
   };
+//   const assignPoliceOfficer = async () => {
+//     try {
+//         // Step 1: Fetch all users
+//         const encryptedtoken=sessionStorage.getItem('jwt');
+//         const token=decryptToken(encryptedtoken);
+//         const response = await axios.get(
+//             process.env.REACT_APP_POLICE_DATA,
+//             {
+//                 headers: { Authorization: `Bearer ${token}` },
+//             }
+//         );
+ 
+//         const allUsers = JSON.parse(response.data.body);
+ 
+//         // Step 2: Filter users with the role "Police"
+//         const policeOfficers = allUsers.filter(user => user.role === 'investigator');
+ 
+//         if (policeOfficers.length === 0) {
+//             console.error('No police officers available.');
+//             return null;
+//         }
+ 
+//         // Step 3: Sort the police officers
+//         const sortedPoliceOfficers = policeOfficers.sort((a, b) => {
+//             // Specialization relevance (exact match with caseSpecialization comes first)
+//             const specializationMatchA = a.specialization === 'Bribery' ? 1 : 0;
+//             const specializationMatchB = b.specialization === 'Bribery' ? 1 : 0;
+ 
+//             if (specializationMatchA !== specializationMatchB) {
+//                 return specializationMatchB - specializationMatchA;
+//             }
+ 
+//             // Experience (higher is better)
+//             if (parseInt(b.experience) !== parseInt(a.experience)) {
+//                 return parseInt(b.experience) - parseInt(a.experience);
+//             }
+ 
+//             // Assigned cases (lower is better)
+//             if (a.assignedCases !== b.assignedCases) {
+//                 return a.assignedCases - b.assignedCases;
+//             }
+ 
+//             // Finished cases (higher is better)
+//             return b.finishedCases - a.finishedCases;
+//         });
+ 
+//         // Step 4: Assign case to the top-ranked police officer
+//         const selectedPoliceOfficer = sortedPoliceOfficers[0];
+//         console.log('Assigned Police Officer:', selectedPoliceOfficer);
+ 
+//         return selectedPoliceOfficer;
+//     } catch (error) {
+//         console.error('Error fetching or assigning police officers:', error);
+//         return null;
+//     }
+// };
+
+
+const assignPoliceOfficer = async () => {
+  try {
+      // Step 1: Fetch all users
+      const encryptedtoken=sessionStorage.getItem('jwt');
+      const token=decryptToken(encryptedtoken);
+      const response = await axios.get(
+          process.env.REACT_APP_POLICE_DATA,
+          {
+              headers: { Authorization: `Bearer ${token}` },
+          }
+      );
+
+      const allUsers = JSON.parse(response.data.body);
+
+      // Step 2: Filter users with the role "Police"
+      const policeOfficers = allUsers.filter(user => user.role === 'investigator');
+
+      if (policeOfficers.length === 0) {
+          console.error('No police officers available.');
+          return null;
+      }
+
+      // Step 3: Sort the police officers
+      const sortedPoliceOfficers = policeOfficers.sort((a, b) => {
+          // Specialization relevance (exact match with caseSpecialization comes first)
+          const specializationMatchA = a.specialization === 'Bribery' ? 1 : 0;
+          const specializationMatchB = b.specialization === 'Bribery' ? 1 : 0;
+
+          if (specializationMatchA !== specializationMatchB) {
+              return specializationMatchB - specializationMatchA;
+          }
+
+          // Assigned cases (lower is better)
+          if (a.assignedCases !== b.assignedCases) {
+            return a.assignedCases - b.assignedCases;
+        }
+
+          // Experience (higher is better)
+          if (parseInt(b.experience) !== parseInt(a.experience)) {
+              return parseInt(b.experience) - parseInt(a.experience);
+          }            
+
+          // Finished cases (higher is better)
+          return b.finishedCases - a.finishedCases;
+      });
+
+      // Step 4: Assign case to the top-ranked police officer
+      const selectedPoliceOfficer = sortedPoliceOfficers[0];
+      console.log('Assigned Police Officer:', selectedPoliceOfficer);
+
+      return selectedPoliceOfficer;
+  } catch (error) {
+      console.error('Error fetching or assigning police officers:', error);
+      return null;
+  }
+};
+
+
+const updateAssignedCases = async (officer) => {
+try {
+    // Prepare the payload
+    const updatedOfficerData = {
+        personid: officer.personid, // Officer's unique ID
+        updatedFields: {
+            assignedCases: officer.assignedCases + 1, // Increment assigned cases
+        },
+    };
+
+    const encryptedtoken=sessionStorage.getItem('jwt');
+    const token=decryptToken(encryptedtoken);
+    // Send PATCH request to your Lambda function
+    const response = await axios.patch(
+        process.env.REACT_APP_PATCH_POLICE_DATA_URL, // Replace with your Lambda function URL
+        updatedOfficerData,
+        {
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": `Bearer ${token}`,
+            },
+        }
+    );
+
+    if (response.status === 200) {
+        console.log("Assigned cases updated successfully:", response.data);
+        return response.data;
+    } else {
+        console.error("Failed to update assigned cases:", response);
+        return null;
+    }
+} catch (error) {
+    console.error("Error updating assigned cases:", error);
+    return null;
+}
+};
 
   const handleSubmit = async () => {
     console.log('Submitting final form data...');
     console.log('Form Data:', formData);
 
+    const username = sessionStorage.getItem("userName");
+
+    const assignedOfficer = await assignPoliceOfficer();
+        if (!assignedOfficer) {
+            alert("No suitable police officer is available for assignment.");
+            return;
+        }
+
     try {
       const individualDetails = JSON.stringify({
         complaint_category: formData.complaintCategory,
-        victim_name: formData.victimName,
+        complainantName: formData.victimName,
         victim_age: formData.victimAge,
         victim_gender: formData.victimGender,
         suspect_name: formData.suspectName,
         suspect_profession: formData.suspectProfession,
         location: formData.location,
-        email:formData.email,
-        date_of_incident: formData.dateOfIncident,
+        victim_email:formData.email,
+        incident_description:formData.ComplaintDescription,
+        incident_date: formData.dateOfIncident,
         caseappliedtime: caseAppliedTime,
         evidence_description: formData.evidenceDescription,
       });
 
       const payload = {
         categoryid: 23,
-        userid: "user182",
-        policeid: "user107",
+        userid: username,
+        policeid: assignedOfficer.personid,
         reasonforwithdrawal: null,
         iswithdrawalaccepted: 0,
         iswithdrawn: 0,
-        iscomplaintaccepted: 0,
+        iscomplaintaccepted: 1,
         isfake: 0,
-        casestatus: 'under investigation',
+        casestatus: 'Complaint Registered',
         isfirfiled: 0,
         individualdetails: individualDetails,
       };
@@ -223,7 +390,30 @@ function ComplaintForm() {
       }
       const whatsappPayload = {
         "to": `+91${formData.phoneNumber}`,
-        "message": "You have successfully filed a case on the Drug Division portal of DiGiPo."
+        "message": ` Dear ${formData.victimName},
+          
+          We are writing to confirm that your report regarding Online Identity Theft has been successfully registered in our system. We appreciate you bringing this matter to our attention and assure you that your case will be handled with the utmost priority and confidentiality.
+          
+          Complaint Details:
+          Complaint ID: ${complaintId}
+          Complaint category: ${formData.complaintCategory}  
+          Date of Registration: ${formData.dateOfIncident}
+          
+          Our team will review the details provided and initiate the necessary actions. Should we require any additional information or documents, you will be notified promptly via this email address or the contact number provided in your form.
+          
+          For your reference, here are some useful tips:
+          
+          - Avoid sharing sensitive personal or financial information online.
+          - Change passwords immediately if you suspect a breach.
+          - Report any suspicious activities linked to this case.
+          
+          If you have any questions or require further assistance, feel free to contact us at Email: support@digitalpolice.com
+          ,Phone: +123 456 7890. Please include your Case ID for faster resolution.
+          
+          Thank you for reporting and helping us combat Bribery effectively.
+          
+          Warm regards,
+          DiGiPo `
       }
       
       console.log("WhatsApp URL:", process.env.REACT_APP_WHATSAPP_URL);
@@ -241,10 +431,36 @@ function ComplaintForm() {
       console.log(apiResponse);
 
       const emailPayload = {
-        recipient_email: formData.email, // Use the victim's email
+        recipient_email: formData.email, 
         subject: "Case Registered Successfully",
-        message_body: `Your case has been registered successfully.`,
+        message_body: `
+          Dear ${formData.victimName},
+          
+          We are writing to confirm that your report regarding Online Identity Theft has been successfully registered in our system. We appreciate you bringing this matter to our attention and assure you that your case will be handled with the utmost priority and confidentiality.
+          
+          Complaint Details:
+          Complaint ID: ${complaintId}
+          Complaint category: ${formData.complaintCategory}  
+          Date of Registration: ${formData.dateOfIncident}
+          
+          Our team will review the details provided and initiate the necessary actions. Should we require any additional information or documents, you will be notified promptly via this email address or the contact number provided in your form.
+          
+          For your reference, here are some useful tips:
+          
+          - Avoid sharing sensitive personal or financial information online.
+          - Change passwords immediately if you suspect a breach.
+          - Report any suspicious activities linked to this case.
+          
+          If you have any questions or require further assistance, feel free to contact us at Email: support@digitalpolice.com
+          ,Phone: +123 456 7890. Please include your Case ID for faster resolution.
+          
+          Thank you for reporting and helping us combat Bribery effectively.
+          
+          Warm regards,
+          DiGiPo 
+        `,
       };
+      
  
       // Log the email payload
       console.log("Email payload:", emailPayload);
@@ -280,12 +496,32 @@ function ComplaintForm() {
       } else {
         console.log("Email sent successfully:", snsResponseBody);
       }   
-      alert('Complaint submitted successfully!');
-    } catch (error) {
-      console.error('Error submitting complaint:', error);
-      alert('An error occurred during submission.');
-    }
-  };
+  
+  toast.success('Complaint submitted successfully!, you will receive a mail regarding  complaint details to your submitted mailid', {
+    position: 'top-right',
+    autoClose: 3000, // Close after 3 seconds
+    hideProgressBar: false,
+    closeOnClick: true,
+    pauseOnHover: true,
+    draggable: true,
+    progress: undefined,
+  });
+  setTimeout(() => {
+    navigate("/home");
+  }, 3000);
+} catch (error) {
+  console.error('Error submitting complaint:', error);
+  toast.error('An error occurred during submission.', {
+    position: 'top-right',
+    autoClose: 3000,
+    hideProgressBar: false,
+    closeOnClick: true,
+    pauseOnHover: true,
+    draggable: true,
+    progress: undefined,
+  });
+}
+};
 
   return (
     <div className="complaint-form-wrapper" style={{ fontFamily: 'Arial, sans-serif', backgroundColor: '#f5f5f5', minHeight: '100vh', padding: '30px' }}>
@@ -301,6 +537,7 @@ function ComplaintForm() {
           position: 'relative',
         }}
       >
+         <ToastContainer position="top-right" autoClose={3000} />
         {/* Back to Home Button in Top-Right Corner */}
         <BackToHomeButton style={{ position: 'absolute', top: '20px', right: '20px' }} />
 
@@ -354,20 +591,22 @@ function ComplaintForm() {
               I confirm all the information is correct.
             </label>
             <button
-              onClick={handleSubmit}
-              disabled={!isChecked}
-              style={{
-                padding: '10px 20px',
-                backgroundColor: '#27ae60',
-                color: '#fff',
-                border: 'none',
-                borderRadius: '5px',
-                cursor: 'pointer',
-                marginLeft: '20px',
-              }}
-            >
-              Submit
-            </button>
+  onClick={handleSubmit}
+  disabled={!isChecked} // Button is disabled if isChecked is false
+  style={{
+    padding: '10px 20px',
+    backgroundColor: '#27ae60',
+    color: '#fff',
+    border: 'none',
+    borderRadius: '5px',
+    cursor: 'pointer',
+    marginLeft: '20px',
+    opacity: isChecked ? 1 : 0.5, // Adjust opacity for a better visual cue
+  }}
+>
+  Submit
+</button>
+
           </div>
         )}
       </div>

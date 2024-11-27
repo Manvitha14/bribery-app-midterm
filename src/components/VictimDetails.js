@@ -195,7 +195,7 @@ function VictimDetails({ formData, setFormData }) {
           />
         </div>
 
-         {/* Date of Incident */}
+         {/* Date of Incident
          <div>
           <Typography sx={{ marginBottom: '0.5rem', fontWeight: 500 }}>
             Case Applied <span style={{ color: 'red' }}>*</span>
@@ -216,7 +216,7 @@ function VictimDetails({ formData, setFormData }) {
               shrink: true,
             }}
           />
-        </div>
+        </div> */}
 
         {/* Time of Incident */}
         <div>
