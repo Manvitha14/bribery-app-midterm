@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import axios from 'axios';
 import Case from './Case';
 import VictimDetails from './VictimDetails';
@@ -10,10 +10,14 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { toast } from 'react-toastify';
 import { useNavigate } from 'react-router-dom';
+ 
+
+const encryptedToken = sessionStorage.getItem('jwt');
+const token = encryptedToken ? decryptToken(encryptedToken) : {};
 
 function ComplaintForm() {
   const [step, setStep] = useState(1);
-  const [formData, setFormData] = useState({
+  const [formData, setFormData,userDetails] = useState({
     complaintCategory: '',
     fullName: '',
     phoneNumber: '',
@@ -29,6 +33,17 @@ function ComplaintForm() {
     evidenceDescription: '',
     evidenceFiles: [],
   });
+
+   // Set phoneNumber and email once token is available
+   useEffect(() => {
+    if (token) {
+      setFormData((prevData) => ({
+        ...prevData,
+        phoneNumber: token.phoneNumber || '',
+        email: token.email || '',
+      }));
+    }
+  }, [token]); 
 
   const [isChecked, setIsChecked] = useState(false); // Checkbox state
   const [errors, setErrors] = useState({}); // Validation errors
@@ -122,62 +137,6 @@ function ComplaintForm() {
   const prevStep = () => {
     setStep((prev) => prev - 1);
   };
-//   const assignPoliceOfficer = async () => {
-//     try {
-//         // Step 1: Fetch all users
-//         const encryptedtoken=sessionStorage.getItem('jwt');
-//         const token=decryptToken(encryptedtoken);
-//         const response = await axios.get(
-//             process.env.REACT_APP_POLICE_DATA,
-//             {
-//                 headers: { Authorization: `Bearer ${token}` },
-//             }
-//         );
- 
-//         const allUsers = JSON.parse(response.data.body);
- 
-//         // Step 2: Filter users with the role "Police"
-//         const policeOfficers = allUsers.filter(user => user.role === 'investigator');
- 
-//         if (policeOfficers.length === 0) {
-//             console.error('No police officers available.');
-//             return null;
-//         }
- 
-//         // Step 3: Sort the police officers
-//         const sortedPoliceOfficers = policeOfficers.sort((a, b) => {
-//             // Specialization relevance (exact match with caseSpecialization comes first)
-//             const specializationMatchA = a.specialization === 'Bribery' ? 1 : 0;
-//             const specializationMatchB = b.specialization === 'Bribery' ? 1 : 0;
- 
-//             if (specializationMatchA !== specializationMatchB) {
-//                 return specializationMatchB - specializationMatchA;
-//             }
- 
-//             // Experience (higher is better)
-//             if (parseInt(b.experience) !== parseInt(a.experience)) {
-//                 return parseInt(b.experience) - parseInt(a.experience);
-//             }
- 
-//             // Assigned cases (lower is better)
-//             if (a.assignedCases !== b.assignedCases) {
-//                 return a.assignedCases - b.assignedCases;
-//             }
- 
-//             // Finished cases (higher is better)
-//             return b.finishedCases - a.finishedCases;
-//         });
- 
-//         // Step 4: Assign case to the top-ranked police officer
-//         const selectedPoliceOfficer = sortedPoliceOfficers[0];
-//         console.log('Assigned Police Officer:', selectedPoliceOfficer);
- 
-//         return selectedPoliceOfficer;
-//     } catch (error) {
-//         console.error('Error fetching or assigning police officers:', error);
-//         return null;
-//     }
-// };
 
 
 const assignPoliceOfficer = async () => {
@@ -275,6 +234,15 @@ try {
 }
 };
 
+const handleInputChange = (e) => {
+  const { name, value } = e.target;
+  setFormData((prevData) => ({
+    ...prevData,
+    [name]: value,
+  }));
+};
+
+
   const handleSubmit = async () => {
     console.log('Submitting final form data...');
     console.log('Form Data:', formData);
@@ -294,6 +262,7 @@ try {
         victim_age: formData.victimAge,
         victim_gender: formData.victimGender,
         suspect_name: formData.suspectName,
+        phone_number:formData.phoneNumber,
         suspect_profession: formData.suspectProfession,
         location: formData.location,
         victim_email:formData.email,
@@ -322,7 +291,7 @@ try {
       const token = decryptToken(jwtToken);
      // const token = "eyJraWQiOiJPMGgyenNCR2lacnlSTzBkNklqdDI1SzdteldpREJKejdhK0lBV2R6XC9yVT0iLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOiIyODUxMDM0MC1lMGExLTcwOTgtZDAyNi03NDY4ZmQzOWFiMmQiLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwiYmlydGhkYXRlIjoiMjAwMy0wMS0xNCIsImdlbmRlciI6ImZlbWFsZSIsImlzcyI6Imh0dHBzOlwvXC9jb2duaXRvLWlkcC51cy13ZXN0LTIuYW1hem9uYXdzLmNvbVwvdXMtd2VzdC0yX1FQdUpmT2FGYyIsInBob25lX251bWJlcl92ZXJpZmllZCI6ZmFsc2UsImNvZ25pdG86dXNlcm5hbWUiOiIyODUxMDM0MC1lMGExLTcwOTgtZDAyNi03NDY4ZmQzOWFiMmQiLCJvcmlnaW5fanRpIjoiMzdkN2U5OGQtNzFlOC00NDMyLWIwOWQtYTQ4MGU4NGZjNDgwIiwiYXVkIjoiMm1udjE3dm9hN2U4cTZiYW5sZzBqMHF0aCIsImV2ZW50X2lkIjoiYWYzN2ZlMDQtNjkxYS00MDBjLWE0ZTctZTUwMjliOGY2YzEzIiwidG9rZW5fdXNlIjoiaWQiLCJhdXRoX3RpbWUiOjE3MzI1MDYyMzksIm5hbWUiOiJNYW53aXRoYSIsInBob25lX251bWJlciI6Iis5MTYzMDQzNDI0OTQiLCJleHAiOjE3MzI1OTI2MzksImN1c3RvbTpyb2xlIjoidXNlciIsImlhdCI6MTczMjUwNjIzOSwianRpIjoiMDU0ZDdmYjYtMTZjZS00MjQ2LWI1NWUtNjUwNTczZDMxYjA5IiwiZW1haWwiOiJtYW5udTE5ODIwMjRAZ21haWwuY29tIn0.EZ9mO0nT0jKOrPD5zVxMXfXoOeAvWO8TgEyCMeRwCdabt2yZOF1OUPsWVUT8onMbZUzpCzua4EJ_YOUPeZvoZRtm62FZKhEpe69wmG4p3uOuOfHAdcnqJzfjqKtTkWZiRdBmAaGA_lOEINFDWmUoTrR-sR35SwgOcr8uenpoJ8kR5f6AisNj1_m3IIm_gmBB-reAEip6Y7RMGQUD0kub6vgrp1sJfd6KhP_BIOTYK9Q4kCzrBX69nBIx-nbVFzCVEk86UV0ueylVZkIAQTEbB96exae3Nu5wzmxD6m4GTBDSyLe9Nskl9afXUhLfkYrGPV2kdgozHf8ociDwtkeQWw";
       const response = await axios.post(
-        'https://x4xn6amqo2.execute-api.eu-west-2.amazonaws.com/UserComplaints',
+        process.env.REACT_APP_API_URL,
         payload,
         {
           headers: {
@@ -356,7 +325,7 @@ try {
             const jwtToken = sessionStorage.getItem('jwt');  
             const token = decryptToken(jwtToken);
             const uploadResponse = await axios.post(
-              'https://kz6gmd08a6.execute-api.ap-northeast-2.amazonaws.com/dev/uploadvideo',
+              process.env.REACT_APP_UPLOAD_VIDEO_URL,
               { body: evidencePayload },
               {
                 headers: {
@@ -466,7 +435,7 @@ try {
       console.log("Email payload:", emailPayload);
  
       // Make the POST request to send the email
-      const emailApi =   `https://8wy1xykpmk.execute-api.us-east-2.amazonaws.com/dev/withoutPdf`;
+      const emailApi = process.env.REACT_APP_EMAIL_API_URL;
  
       const snsResponse = await fetch(emailApi, {
         method: "POST",

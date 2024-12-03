@@ -32,9 +32,6 @@ import {
   import IconButton from '@mui/material/IconButton';
   import InputBase from '@mui/material/InputBase';
   import Paper from '@mui/material/Paper';
-
-
-
   
   import { Home as HomeIcon, Chat as ChatIcon, VideoCall as VideoCallIcon, RemoveCircle as WithdrawIcon, Visibility as ViewIcon } from '@mui/icons-material';
   import { decryptToken } from '../authUtils';
@@ -62,17 +59,38 @@ const SeeAllCases = () => {
     
 
     
+    // const getCaseStatusIndex = (status) => {
+    //   const statusList = [
+    //     "Complaint Registered",
+    //     "Verification in Progress",
+    //     "under investigation",
+    //     "Action Taken",
+    //     "Case Closed",
+    //   ];
+    //   return statusList.indexOf(status);
+    // };
+
     const getCaseStatusIndex = (status) => {
       const statusList = [
         "Complaint Registered",
         "Verification in Progress",
-        "under investigation",
+        "Under Investigation",
         "Action Taken",
         "Case Closed",
       ];
-      return statusList.indexOf(status);
+    
+      const index = statusList.findIndex(
+        (item) => item.toLowerCase() === status?.toLowerCase()
+      );
+    
+      if (index === -1) {
+        console.warn(`Unknown status: ${status}`);
+      }
+    
+      return index === -1 ? 0 : index; // Default to the first step if status is unknown
     };
-      // Calculate total pages
+    
+    //   // Calculate total pages
       const totalPages = Math.ceil(cases.length / casesPerPage);
     
       // Slice cases for the current page
@@ -128,7 +146,7 @@ const SeeAllCases = () => {
         setLoading(true); // Set loading to true at the beginning
   
         const response = await axios.post(
-          'https://p34mpb3lnc.execute-api.eu-west-2.amazonaws.com/User',
+          process.env.REACT_APP_USER_API_URL,
           { userid: targetUserId },
           {
             headers: {
@@ -240,7 +258,7 @@ const handleChatOpen = (complaintid) => {
   
       // Make the PUT request to update the case
       await axios.put(
-        "https://p34mpb3lnc.execute-api.eu-west-2.amazonaws.com/User",
+        process.env.REACT_APP_USER_API_URL,
         updatedCase,
         config
       );
@@ -282,7 +300,7 @@ const handleChatOpen = (complaintid) => {
   if (cases.length === 0)
     return (
       <Typography>
-        No cases found for user ID {targetUserId} and category ID {targetCategoryId}.
+       No cases found.
       </Typography>
     );
 
@@ -616,7 +634,7 @@ const handleChatOpen = (complaintid) => {
     console.log(selected.receiverId);
   </Box>
 )}
-             {caseItem.firfiled === 1 && (
+             {caseItem.isfirfiled === 1 && (
   <Button
     variant="outlined"
     size="small"
@@ -628,13 +646,12 @@ const handleChatOpen = (complaintid) => {
         color: "#fff",
       },
     }}
-    onClick={() => generateFIRCopy(caseItem)} // Updated to call the imported function
+    onClick={() => generateFIRCopy(selectedCase)} // Updated to call the imported function
   >
     Download as PDF
   </Button>
 )}
-
-            </Box>
+</Box>
           </Card>
         </Grid>
       ))}
